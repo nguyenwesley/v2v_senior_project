@@ -53,9 +53,6 @@ moveTopic = 'vehicle/Move'
 loremTopic = ''
 ipsumTopic = ''
 
-#Default payload
-payload = None
-
 #End of MQTT stuff
 
 
@@ -271,7 +268,7 @@ def midpoint(image, leftlane, rightlane):
     xR = rightlane[0]*y**2 + rightlane[1]*y + rightlane[2]
     mid = ((x/2)-xL)/(xR-xL)*100
     mid = int(mid)
-    mqttSend(mid)
+    mqttSend(mid, moveTopic)
     return mid
         
 def conversion(theta):
@@ -310,9 +307,8 @@ def pipeline(image,ypnts,theta):
     return result
 
 #MQTT Function that publishes current center of the vehicle.
-def mqttSend(center):
-    payload = center
-    publish.single(moveTopic, payload, hostname=hostID)
+def mqttSend(payload, topic):
+    publish.single(topic, str(payload), hostname=hostID)
     print("\nTime payload was sent:- ", datetime.datetime.now())
     print("Payload: ", payload)
 
