@@ -163,7 +163,7 @@ def hlss(image):
     saturation = HLS[:, :, 2]
     return saturation
 
-def finalbinary(image, threshbright = (175,255), threshsat = (220,250), threshlight = (215,255), threshr = (230,255)):
+def finalbinary(image, threshbright = (210,255), threshsat = (180,255), threshlight = (220,255), threshr = (210,255)):
     saturation = hlss(image)
     lightness = luvl(image)
     brightness = labb(image)
@@ -268,7 +268,6 @@ def midpoint(image, leftlane, rightlane):
     xR = rightlane[0]*y**2 + rightlane[1]*y + rightlane[2]
     mid = ((x/2)-xL)/(xR-xL)*100
     mid = int(mid)
-    mqttSend(mid, moveTopic)
     return mid
         
 def conversion(theta):
@@ -291,6 +290,8 @@ def pipeline(image,ypnts,theta):
     back = plotpoints(image, leftline, rightline, ploty)
     finalback = inv_perspective(back)
     result = cv2.addWeighted(image, 1, finalback, 0.5, 0)
+    payload = constructPay(center)
+    mqttSend(payload, moveTopic)
     result = cv2.putText(result, str(center), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     result = cv2.putText(result, 'Midpoint', (50, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     result = cv2.putText(result, 'Distance(ft)', (50, (80)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
@@ -305,6 +306,14 @@ def pipeline(image,ypnts,theta):
     del distanceft[:]
     del ypnts[:]
     return result
+
+#Assembles the payload to send via MQTT
+def constructPay(center):
+    payload = ""
+    payload += str(center).zfill(3)
+    payload += str(min(distanceft)).zfill(3)
+    #Setting default movement as Forward
+    payload += "10"
 
 #MQTT Function that publishes current center of the vehicle.
 def mqttSend(payload, topic):
