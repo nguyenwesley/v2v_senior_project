@@ -45,19 +45,19 @@ int stateFB[2];
  * < 91, bank left (no less than 40)
  * > 91, bank right (no greater than 141)
  */
- #define restingPos 91
- #define sLeft 75
- #define mLeft 65
- #define lLeft 40
- #define sRight 107
- #define mRight 117
- #define lRight 141
+#define restingPos 91
+#define sLeft 75
+#define mLeft 65
+#define lLeft 40
+#define sRight 107
+#define mRight 117
+#define lRight 141
 
- #define carCenter 50
- #define sLeftThresh 47
- #define mLeftThresh 43
- #define sRightThresh 53
- #define mRightThresh 57
+#define carCenter 50
+#define sLeftThresh 48
+#define mLeftThresh 46
+#define sRightThresh 52
+#define mRightThresh 56
  
 /*
  * uint8_t array used to set pin state via for loop.
