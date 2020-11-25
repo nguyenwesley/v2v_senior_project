@@ -3,30 +3,19 @@
 #include <Servo.h>
 
 //WiFi Passwords
-/*
- * REMOVE BEFORE POSTING OR UPLOADING ANYWHERE
- */
-#define WesleySSID ""
-#define WesleyPass ""
-
-#define AdamSSID ""
-#define AdamPass ""
+#define wifiSSID ""
+#define wifiPass ""
 
 //Change ssid and password when needed
-const char* ssid = AdamSSID;
-const char* password = AdamPass;
+const char* ssid = wifiSSID;
+const char* password = wifiPass;
 
 //Raspberry Pi IP and port, IP will vary
-const char* MQTT_SERVER = "10.0.0.125";
+const char* MQTT_SERVER = "";
 const int MQTT_PORT = 1883;
-
-//MQTT username and password, irrelevent to current project
-const char* mqttUser = "test";
-const char* mqttPass = "pass";
 
 //MQTT Topics
 const char* moveTopic = "vehicle/Move";
-const char* confirmTopic = "vehicle/Confirm";
 
 int recvPay[8];
 char yPayload[3] = "";
@@ -65,10 +54,10 @@ int stateFB[2];
  #define lRight 141
 
  #define carCenter 50
- #define sLeftThresh 45
- #define mLeftThresh 40
- #define sRightThresh 55
- #define mRightThresh 60
+ #define sLeftThresh 47
+ #define mLeftThresh 43
+ #define sRightThresh 53
+ #define mRightThresh 57
  
 /*
  * uint8_t array used to set pin state via for loop.
@@ -172,9 +161,11 @@ void callback(char* topic, byte* payload, unsigned int length)
         x++;
     }
     Serial.println("\n");
+    Serial.print("Steering Payload:- ");
     Serial.println(yPayload);
+    Serial.print("Distance Payload:- ");
     Serial.println(temp);
-    Serial.println("SEPERATE");
+    Serial.print("Forward/Backward Payload:- ");
     Serial.print((char)stateFB[0]);
     Serial.println((char)stateFB[1]);
     /*
