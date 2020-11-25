@@ -37,8 +37,8 @@ EXrange = "E1:E3"
 def on_message(client,userdata,msg):
     print("Message Recieved ->"+msg.topic+" "+ str(msg.payload))
     if len(msg.payload) >= 6:
-        temp = str(msg.payload[3-5])
-        urllib.request.urlopen("https://script.google.com/macros/s/AKfycbxe3GQaVFcu1N3He549Chgblg1fxXIHp4EbskeulbDaga_q3oo/exec?gps="+temp+"&spd=40")
+        temp = chr(msg.payload[3]) + chr(msg.payload[4]) + chr(msg.payload[5])
+        urllib.request.urlopen("https://script.google.com/macros/s/AKfycbxe3GQaVFcu1N3He549Chgblg1fxXIHp4EbskeulbDaga_q3oo/exec?gps="+str(temp)+"&spd=40")
         print("Updated variables in server\n")
     else:
         print("insufficient packet size\n")
