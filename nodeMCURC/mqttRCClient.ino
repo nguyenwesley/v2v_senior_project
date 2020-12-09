@@ -127,7 +127,9 @@ void setup() {
     }
 }
 
-
+/*
+ * Payload handling.
+ */
 void callback(char* topic, byte* payload, unsigned int length)
 {
     Serial.print("Payload from topic: ");
@@ -137,7 +139,7 @@ void callback(char* topic, byte* payload, unsigned int length)
     /*
      * Parses payload into variables to be interpreted.
      */
-     int x = 0;
+	int x = 0;
     for (int i = 0; i < 3; i++)
     {
         recvPay[i] = (int) payload[i];
@@ -168,12 +170,9 @@ void callback(char* topic, byte* payload, unsigned int length)
     Serial.print("Forward/Backward Payload:- ");
     Serial.print((char)stateFB[0]);
     Serial.println((char)stateFB[1]);
-    /*
-     * Insert vehicle movement commands here.
-     * Commands will be executed after payload is received.
-     */
-     laneHandler(atoi(yPayload));
-     setX(atoi(fBPayload), stateFB);
+	
+	laneHandler(atoi(yPayload));
+	setX(atoi(fBPayload), stateFB);
     Serial.println("\n--------------");
 }
 
@@ -202,7 +201,6 @@ void laneHandler(int targetCenter)
 
 /*
  * Sets vehicle's speed using PWM.
- * Will need to declare variable at some point.
  */
 void setX(int magnitude, int fbState[2])
 {
@@ -230,6 +228,6 @@ void setX(int magnitude, int fbState[2])
 
 void loop() {
     client.subscribe(moveTopic);
-    delay(1);
+    delay(1);	//Delay of some value needs to be added for client to work properly.
     client.loop();
 }
