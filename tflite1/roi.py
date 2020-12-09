@@ -290,8 +290,11 @@ def pipeline(image,ypnts,theta):
     back = plotpoints(image, leftline, rightline, ploty)
     finalback = inv_perspective(back)
     result = cv2.addWeighted(image, 1, finalback, 0.5, 0)
-    payload = constructPay(center)
+    
+    #Package movement payload to send to moveTopic.
+    payload = constructMovePay(center)
     mqttSend(payload, moveTopic)
+
     result = cv2.putText(result, str(center), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     result = cv2.putText(result, 'Midpoint', (50, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     result = cv2.putText(result, 'Distance(ft)', (50, (80)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
@@ -307,8 +310,12 @@ def pipeline(image,ypnts,theta):
     del ypnts[:]
     return result
 
-#Assembles the payload to send via MQTT
-def constructPay(center):
+#Assemble the movement payload into specific format.
+#payloadSize = 8
+#payload[0-2] = midpoint value
+#payload[3-5] = distance from another vehicle value
+#payload[6-7] = decides if vehicle is moving forward or backwards
+def constructMovePay(center):
     payload = ""
     payload += str(center).zfill(3)
     payload += str(min(distanceft)).zfill(3)
@@ -316,6 +323,7 @@ def constructPay(center):
     payload += "10"
 
 #MQTT Function that publishes current center of the vehicle.
+#mqttSend is modular and doesn't require a function to construct its payload.
 def mqttSend(payload, topic):
     publish.single(topic, str(payload), hostname=hostID)
     print("\nTime payload was sent:- ", datetime.datetime.now())
