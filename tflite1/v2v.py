@@ -270,7 +270,7 @@ def midpoint(image, leftlane, rightlane):
     mid = int(mid)
     return mid
         
-def conversion(theta):
+def conversion():
     for n in range(len(carypix)):
         distancepx = 720-carypix[n]
         distanceyft = (distancepx/240)*55
@@ -282,7 +282,7 @@ def conversion(theta):
     
 def pipeline(image,ypnts,theta):
     bird = perspective(image,ypnts)
-    conversion(theta)
+    conversion()
     binary = finalbinary(bird)
     leftline, rightline = windows(binary)
     center = midpoint(image, leftline, rightline)
@@ -329,7 +329,6 @@ def mqttSend(payload, topic):
     print("\nTime payload was sent:- ", datetime.datetime.now())
     print("Payload: ", payload)
 
-# Open video file
 video = cv2.VideoCapture(VIDEO_PATH)
 imW = video.get(cv2.CAP_PROP_FRAME_WIDTH)
 imH = video.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -339,7 +338,6 @@ distanceft = []
 ypnts = []
 
 while(video.isOpened()):		
-    # Acquire frame and resize to expected shape [1xHxWx3]
     ret, frame = video.read()
     if not ret:
       print('Reached the end of the video!')
@@ -349,32 +347,23 @@ while(video.isOpened()):
         x = 0
         ymax = 0
         theta = 0
-    
-        #frame_rgb =  cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+   
         frame_rgb = frame
         frame_resized = cv2.resize(frame_rgb, (widthm, heightm))
         input_data = np.expand_dims(frame_resized, axis=0)
 
-		# Normalize pixel values if using a floating model (i.e. if model is non-quantized)
         if floating_model:
             input_data = (np.float32(input_data) - input_mean) / input_std
 
-		# Perform the actual detection by running the model with the image as input
         interpreter.set_tensor(input_details[0]['index'],input_data)
         interpreter.invoke()
 
-		# Retrieve detection results
-        boxes = interpreter.get_tensor(output_details[0]['index'])[0] # Bounding box coordinates of detected objects
-        classes = interpreter.get_tensor(output_details[1]['index'])[0] # Class index of detected objects
-        scores = interpreter.get_tensor(output_details[2]['index'])[0] # Confidence of detected objects
-		#num = interpreter.get_tensor(output_details[3]['index'])[0]  # Total number of detected objects (inaccurate and not needed)
+        boxes = interpreter.get_tensor(output_details[0]['index'])[0]
+        classes = interpreter.get_tensor(output_details[1]['index'])[0]
+        scores = interpreter.get_tensor(output_details[2]['index'])[0]
 
-		# Loop over all detections and draw detection box if confidence is above minimum threshold
         for i in range(len(scores)):
             if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
-
-				# Get bounding box coordinates and draw box
-				# Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
                 ymin = int(max(1,(boxes[i][0] * imH)))
                 xmin = int(max(1,(boxes[i][1] * imW)))
                 ymax = int(min(imH,(boxes[i][2] * imH)))
@@ -383,24 +372,21 @@ while(video.isOpened()):
                 
                 if xmin > 650:
                     cv2.rectangle(frame_rgb, (xmin,ymin), (xmax,ymax), (10, 255, 0), 4)
-                    object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    # Draw label
-                    label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
-                    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                    label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                    cv2.rectangle(frame_rgb, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                    cv2.putText(frame_rgb, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+                    object_name = labels[int(classes[i])] 
+                    label = '%s: %d%%' % (object_name, int(scores[i]*100)) 
+                    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) 
+                    label_ymin = max(ymin, labelSize[1] + 10) 
+                    cv2.rectangle(frame_rgb, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED)
+                    cv2.putText(frame_rgb, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
                     ypnts.append(ymax)
                     
-		# All the results have been drawn on the frame, so it's time to display it.
         lanes = pipeline(frame_rgb, ypnts, theta)
 		
         cv2.imshow('Object detector', lanes)
 	
-    # Press 'q' to quit
+   
     elif cv2.waitKey(1) == ord('q'):
         break
 
-# Clean up
 video.release()
 cv2.destroyAllWindows()
